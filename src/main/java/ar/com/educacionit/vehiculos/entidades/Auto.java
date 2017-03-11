@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Auto extends Vehiculo {
 
@@ -121,7 +122,7 @@ public class Auto extends Vehiculo {
         this.id = id;
     }
 
-    public static ArrayList obtenerTodos(Connection conn) throws Exception {
+    public static List<Auto> obtenerTodos(Connection conn) throws Exception {
         // Arma la consulta y la ejecuta
         String laConsulta = "SELECT * FROM autos";
         Statement stmtConsulta = conn.createStatement();
@@ -131,7 +132,7 @@ public class Auto extends Vehiculo {
         System.out.println(">>SQL: " + laConsulta);
 
         // Construye la coleccion de autos
-        ArrayList autos = new ArrayList();
+        List<Auto> autos = new ArrayList<>();
 
         // Muestra los datos
         while (rs.next()) {

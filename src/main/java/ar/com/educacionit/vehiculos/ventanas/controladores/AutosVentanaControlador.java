@@ -13,8 +13,6 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -194,14 +192,7 @@ public class AutosVentanaControlador extends ConcesionariaControlador implements
         try {
             // Obtiene la conexion
             Connection conn = AdministradorDeConexiones.getConnection();
-
-            // Caso #1 -- Obtener autos, e informarlos
-            ArrayList autos = Auto.obtenerTodos(conn);
-            Iterator it = autos.iterator();
-            while (it.hasNext()) {
-                Auto a = (Auto) it.next();
-                autosData.add(a);
-            }
+            Auto.obtenerTodos(conn).forEach(a -> autosData.add(a));
         } catch (Exception ex) {
             Logger.getLogger(AutosVentanaControlador.class.getName()).log(Level.SEVERE, null, ex);
         }
