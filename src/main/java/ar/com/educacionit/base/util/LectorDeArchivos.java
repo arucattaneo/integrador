@@ -23,7 +23,7 @@ public class LectorDeArchivos {
     public static List obtenerContenidoDeArchivoComoVector(String archivoALeer) throws Exception {
         
         // Obtiene un stream al archivo a leer
-        InputStreamReader isr = new InputStreamReader( LectorDeArchivos.class.getResourceAsStream(archivoALeer) );
+        InputStreamReader isr = new InputStreamReader( LectorDeArchivos.class.getClassLoader().getResourceAsStream(archivoALeer) );
         
         // Construye un BufferedReader
         BufferedReader readerMejorado = new BufferedReader( isr );
