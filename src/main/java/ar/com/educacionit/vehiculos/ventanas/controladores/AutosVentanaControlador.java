@@ -87,7 +87,7 @@ public class AutosVentanaControlador extends ConcesionariaControlador implements
         clmn_marca.setCellValueFactory(cellData -> cellData.getValue().marcaProperty());
         clmn_modelo.setCellValueFactory(cellData -> cellData.getValue().modeloProperty());
 
-        // Listener para detectar el cambio de seleccion
+        // Listener para detectar el cambio de seleccion (cuando selecciono un item completa el formulario de al lado)
         tbl_autos.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> cargarAutoSeleccionado(newValue));
 

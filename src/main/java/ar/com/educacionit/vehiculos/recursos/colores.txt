@@ -1,7 +1,0 @@
-Blanco
-Azul
-Negro
-Verde
-Amarillo
-Gris
-Rojo
