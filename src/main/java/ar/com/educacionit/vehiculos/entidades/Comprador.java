@@ -10,8 +10,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 public class Comprador extends Persona {
@@ -37,12 +39,26 @@ public class Comprador extends Persona {
         return presupuesto;
     }
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Comprador(Integer id, String nombre, String apellido, String numeroDocumento, double presupuesto) {
+        super(nombre, apellido, numeroDocumento);
+        this.id = id;
+        this.nombre = new SimpleStringProperty(nombre);
+        this.apellido = new SimpleStringProperty (apellido);
+        this.presupuesto = new SimpleDoubleProperty (presupuesto);
+    }
+     
     /**
      * Creates a new instance of Comprador
      */
-    public Comprador() {
-        this(null,null,null,null);
-    }
+  
 
     public Comprador(String nombre, String apellido, String numeroDocumento, Double presupuesto) {
         super(nombre, apellido, numeroDocumento);
@@ -62,7 +78,7 @@ public class Comprador extends Persona {
         this.presupuesto.set(presupuesto);
     }
     
-    public static ArrayList obtenerTodos(Connection conn) throws Exception {
+    public static List<Comprador> obtenerTodos(Connection conn) throws Exception {
         // Arma la consulta y la ejecuta
         String laConsulta = "SELECT * FROM compradores";
         Statement stmtConsulta = conn.createStatement();
@@ -77,11 +93,12 @@ public class Comprador extends Persona {
         // Muestra los datos
         while (rs.next()) {
             // Arma el objeto comprador con los datos de la consulta
-            Comprador c = new Comprador();
-            c.setNombre(rs.getString("co_nombre"));
-            c.setApellido(rs.getString("co_apellido"));
-            c.setNumeroDocumento(rs.getString("co_documento"));
-            c.setPresupuesto(rs.getDouble("co_presupuesto"));
+            Comprador c = new Comprador(
+            rs.getInt("co_id"),
+            rs.getString("co_nombre"),
+            rs.getString("co_apellido"),
+            rs.getString("co_documento"),
+            rs.getDouble("co_presupuesto"));
           
 
             // Agrega el auto a la coleccion
@@ -121,5 +138,43 @@ public class Comprador extends Persona {
         // Cierra el Statement
         ps.close();
         return id;
+    }
+
+    public void eliminar(Connection conn) throws Exception {
+        // Arma la sentencia de eliminacion
+        String laEliminacion = "DELETE FROM compradores WHERE co_id = " + getId();
+
+        // Informa la eliminacion a realizar
+        System.out.println(">>SQL: " + laEliminacion);
+
+        // Ejecuta la eliminacion
+        Statement stmtEliminacion = conn.createStatement();
+        stmtEliminacion.execute(laEliminacion);
+
+        // Cierra el Statement
+        stmtEliminacion.close();
+    }
+    
+    public void actualizar(Connection conn) throws Exception {
+        // Arma la sentencia de actualizacion
+        String laActualizacion = "UPDATE compradores "
+                + "SET co_id = ?, co_nombre = ?, "
+                + "co_apellido = ?, co_presupuesto = ?";
+
+        // Informa la actualizacion a realizar
+        System.out.println(">>SQL: " + laActualizacion);
+
+        // Ejecuta la actualizacion
+        PreparedStatement ps = conn.prepareStatement(laActualizacion);
+        ps.setInt(1, getId());
+        ps.setString(2, getNombre());
+        ps.setString(3, getApellido());
+        ps.setString(4, getNumeroDocumento());
+        ps.setDouble(5, getPresupuesto());
+        ps.execute();
+
+        // Cierra el Statement
+        ps.close();
+
     }
 }

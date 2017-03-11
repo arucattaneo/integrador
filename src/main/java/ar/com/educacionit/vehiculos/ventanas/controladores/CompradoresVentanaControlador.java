@@ -12,11 +12,15 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
@@ -27,18 +31,29 @@ import javafx.scene.control.TableView;
  */
 public class CompradoresVentanaControlador extends ConcesionariaControlador implements Initializable {
 
-    @FXML
-    private Button btn_close;
-
-    @FXML
-    private Button btn_new;
-
-    @FXML
+     @FXML
     private Button btn_edit;
 
     @FXML
     private Button btn_delete;
     
+    @FXML
+    private Button btn_close;
+
+    @FXML
+    private Button btn_new;
+    
+    @FXML
+    private Label lbl_nombre;
+    
+    @FXML
+    private Label lbl_apellido;
+    
+    @FXML
+    private Label lbl_documento;
+    
+    @FXML
+    private Label lbl_presupuesto;
     
     @FXML
     private TableColumn<Comprador, String> clmn_nombre;
@@ -47,13 +62,15 @@ public class CompradoresVentanaControlador extends ConcesionariaControlador impl
     private TableColumn<Comprador, String> clmn_apellido;
     
     @FXML
-    private TableView<Auto> tbl_compradores;
+    private TableView<Comprador> tbl_compradores;
 
     /**
      * Initializes the controller class.
      * @param url
      * @param rb
      */
+    private ObservableList<Comprador> compradoresData = FXCollections.observableArrayList();
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         btn_edit.setDisable(true);
@@ -71,49 +88,45 @@ public class CompradoresVentanaControlador extends ConcesionariaControlador impl
     
     private void cargarCompradoresSeleccionado(Comprador c) {
         if (c != null) {
-            this.lbl_alto_valor.setText(String.valueOf(c.getAltura()));
-            this.lbl_ancho_valor.setText(String.valueOf(c.getAncho()));
-            this.lbl_largo_valor.setText(String.valueOf(c.getLargo()));
-            this.lbl_marca_valor.setText(a.getMarca());
-            this.lbl_modelo_valor.setText(a.getModelo());
-            this.lbl_color_valor.setText(a.getColor());
-            this.lbl_precio_valor.setText(String.valueOf(a.getPrecio()));
-            this.txt_descripcion.setText(a.getEquipamiento());
+            this.lbl_nombre.setText(c.getNombre());
+            this.lbl_apellido.setText(c.getApellido());
+            this.lbl_documento.setText(c.getNumeroDocumento());
+            this.lbl_presupuesto.setText(String.valueOf(c.getPresupuesto()));
+            
         } else {
-            this.lbl_alto_valor.setText("");
-            this.lbl_ancho_valor.setText("");
-            this.lbl_largo_valor.setText("");
-            this.lbl_marca_valor.setText("");
-            this.lbl_modelo_valor.setText("");
-            this.lbl_color_valor.setText("");
-            this.lbl_precio_valor.setText("");
-            this.txt_descripcion.setText("");
+            this.lbl_nombre.setText("");
+            this.lbl_apellido.setText("");
+            this.lbl_documento.setText("");
+            this.lbl_presupuesto.setText("");
+
         }
-        btn_editar.setDisable(false);
-        btn_borrar.setDisable(false);
+        btn_edit.setDisable(false);
+        btn_delete.setDisable(false);
     }
-    /* public void initialize(URL url, ResourceBundle rb) {
-        btn_editar.setDisable(true);
-        btn_borrar.setDisable(true);
-        txt_descripcion.setEditable(false);
 
-        // Initialize the person table with the two columns.
-        clmn_marca.setCellValueFactory(cellData -> cellData.getValue().marcaProperty());
-        clmn_modelo.setCellValueFactory(cellData -> cellData.getValue().modeloProperty());
-
-        // Listener para detectar el cambio de seleccion
-        tbl_autos.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> cargarAutoSeleccionado(newValue));
-
-        tbl_autos.setItems(autosData);
-        llenarTablaDeAutos();
-    }*/
     @FXML
     private void abrirEdicion(ActionEvent event) {
         Stage stage = (Stage) btn_close.getScene().getWindow();
         super.mainApp.mostrarVentanaModal(Ventanas.CompradoresEdicion, stage, null);
     }
 
+    @FXML
+    private void editarComprador(ActionEvent event) {
+        Stage stage = (Stage) btn_close.getScene().getWindow();
+        Comprador c = tbl_compradores.getSelectionModel().getSelectedItem();
+        super.mainApp.mostrarVentanaModal(Ventanas.CompradoresEdicion, stage, c);
+        try {
+            Connection conn = AdministradorDeConexiones.getConnection();
+            c.actualizar(conn);
+            conn.close();
+            cargarCompradoresSeleccionado(c);
+        } catch (Exception ex) {
+            // Muestra el mensaje de error
+            super.mostrarMensajeDeError("Error al conectarse con la base de datos", ex);
+        }
+
+    }
+    
     @FXML
     private void cerrarVentana(ActionEvent event) {
         Stage stage = (Stage) btn_close.getScene().getWindow();
@@ -124,17 +137,34 @@ public class CompradoresVentanaControlador extends ConcesionariaControlador impl
         try {
             // Obtiene la conexion
             Connection conn = AdministradorDeConexiones.getConnection();
-
-            // Caso #1 -- Obtener compradores, e informarlos
-            ArrayList compradores = Comprador.obtenerTodos(conn);
-            Iterator it = compradores.iterator();
-            while (it.hasNext()) {
-                Comprador c = (Comprador) it.next();
-                compradores.add(c);
-            }
+            Comprador.obtenerTodos(conn).forEach(c -> compradoresData.add(c));
         } catch (Exception ex) {
-            Logger.getLogger(CompradoresVentanaControlador.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AutosVentanaControlador.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+    
+    @FXML
+    private void eliminarComprador() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmacion");
+        alert.setHeaderText("Esta a punto de eliminar al comprador...");
+        alert.setContentText("desea continuar?");
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK) {
+            Comprador c = tbl_compradores.getSelectionModel().getSelectedItem();
+
+            try {
+                Connection conn = AdministradorDeConexiones.getConnection();
+                c.eliminar(conn);
+                conn.close();
+                int selectedIndex = tbl_compradores.getSelectionModel().getSelectedIndex();
+                tbl_compradores.getItems().remove(selectedIndex);
+            } catch (Exception ex) {
+                // Muestra el mensaje de error
+                super.mostrarMensajeDeError("Error al conectarse con la base de datos", ex);
+            }
+
+        }
     }
 }

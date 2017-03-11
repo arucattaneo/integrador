@@ -5,6 +5,7 @@
  */
 package ar.com.educacionit.vehiculos.ventanas.controladores;
 
+import ar.com.educacionit.vehiculos.entidades.Comprador;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -40,7 +41,18 @@ public class CompradoresEdicionControlador extends EdicionControlador implements
 
     @Override
     public void setearEntidad(Object entidad) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Comprador c = (Comprador) entidad;
+        this.comprador = c;
+        if (c.getId() != null) {
+            fld_alto.setText(String.valueOf(a.getAltura()));
+            fld_ancho.setText(String.valueOf(a.getAncho()));
+            fld_largo.setText(String.valueOf(a.getLargo()));
+            cmb_marca.setValue(a.getMarca());
+            cmb_modelo.setValue(a.getModelo());
+            cmb_color.setValue(a.getColor());
+            fld_precio.setText(String.valueOf(a.getPrecio()));
+            txt_equipamiento.setText(a.getEquipamiento());
+        }
     }
     
 }
